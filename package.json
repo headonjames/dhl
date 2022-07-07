@@ -1,0 +1,19 @@
+{
+  "name": "dhl",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/headonjames/dhl.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/headonjames/dhl/issues"
+  },
+  "homepage": "https://github.com/headonjames/dhl#readme"
+}
