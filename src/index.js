@@ -26,23 +26,23 @@ const fs         = require("fs");
 const fetch      = require("node-fetch");
 
 const date = new Date(Date.now());
-const dateString = date.toISOString().substring(0, 10);
+const dateString = date.toISOString().substring(0, 10); // Date format as needed by DHL API - YYYY-MM-DD
 
 async function run()
 {
     let inputFile;
-    await fileDialog({type: "open-file"}).then(file => inputFile = file[0]).catch(err => console.error(err));
+    await fileDialog({type: "open-file"}).then(file => inputFile = file[0]); // Select input file by opening file dialog
     const outputFile = inputFile + ".csv";
-    fs.writeFileSync(outputFile, "");
+    fs.writeFileSync(outputFile, ""); // Clear the output file
 
     const inputFileContents = fs.readFileSync(inputFile, "utf-8");
-    inputFileContents.split(/\r?\n/).forEach(async line => {
+    inputFileContents.split(/\r?\n/).forEach(async line => { // Run over every line of the file
         let cityName;
         let valid = "";
 
-        await fetch(`https://dct.dhl.com/data/postLoc?start=0&max=1500&queryBy=2&cntryCd=CN&postcdStart=${line}&t=${Date.now()}`, {
+        await fetch(`https://dct.dhl.com/data/postLoc?start=0&max=1500&queryBy=2&cntryCd=CN&postcdStart=${line}&t=${Date.now()}`, { // Get city name from postcode
             "headers": {
-              "accept": "application/json",
+              "accept": "application/json", // Require json response format
             },
             "method": "GET"
           }).then(res => res.text())
@@ -51,18 +51,18 @@ async function run()
                 if(text.errorCode)
                     throw text.errorMessage;
                 if(text.count)
-                    cityName = text.postalLocationList.postalLocation[0].cityName.replace(/ /g, "+");
+                    cityName = text.postalLocationList.postalLocation[0].cityName.replace(/ /g, "+"); // Get city name from json response
                 else
-                valid = "INVALID";
+                    valid = "INVALID";
         });
-        await fetch(`https://dct.dhl.com/data/quotation/?dtbl=N&declVal=&declValCur=GBP&wgtUom=kg&dimUom=cm&noPce=1&wgt0=0.1&w0=0&l0=0&h0=0&shpDate=${dateString}&orgCtry=GB&orgCity=EDINBURGH&orgSub=&orgZip=EH87&dstCtry=CN&dstCity=${cityName}&dstSub=&dstZip=${line}`, {
+        await fetch(`https://dct.dhl.com/data/quotation/?dtbl=N&declVal=&declValCur=GBP&wgtUom=kg&dimUom=cm&noPce=1&wgt0=0.1&w0=0&l0=0&h0=0&shpDate=${dateString}&orgCtry=GB&orgCity=EDINBURGH&orgSub=&orgZip=EH87&dstCtry=CN&dstCity=${cityName}&dstSub=&dstZip=${line}`, { // Request postal routes
                     "headers": {
                         "accept": "application/json"
                     },
                     "method": "GET"
                     }).then(res => res.text())
                     .then(text => valid = JSON.parse(text).count ? "VALID" : "INVALID");
-        fs.appendFileSync(outputFile, `${line},${valid}\n`);
+        fs.appendFileSync(outputFile, `${line},${valid}\n`); // Write to output file
     });
 }
 
